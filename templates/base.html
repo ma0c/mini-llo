@@ -1,3 +1,4 @@
+{% load i18n %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -16,6 +17,30 @@
     <title>Mini-llo</title>
   </head>
   <body>
+    {% block navbar %}
+        <nav class="navbar d-flex p-2">
+        <div class="p-2">
+            <a href="/">
+                Mini-llo
+            </a>
+        </div>
+        <div class="mr-auto " >
+{#            <form >#}
+{#              <input class="form-control" type="search" placeholder="Search" aria-label="Search">#}
+{#              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
+{#            </form>#}
+        </div>
+
+        <div >
+            {% if user.is_authenticated %}
+                <a href="{{ approve_ideas_url }}" class="p-2"> {% trans "Approve ideas" %}</a>
+                <a href="{{ logout_url }}" class="p-2">{{ user.username }} - {% trans "Log out" %}</a>
+            {% else %}
+                <a href="{{ login_url }}" class="p-2"> {% trans "Log in" %}</a>
+            {% endif %}
+        </div>
+        </nav>
+    {% endblock %}
     <div class="container">
 
         {% block content %}
@@ -27,6 +52,8 @@
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+    <!-- SnackbarJS plugin -->
+    <script src="https://cdn.rawgit.com/FezVrasta/snackbarjs/1.1.0/dist/snackbar.min.js"></script>
     <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
     <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
   {% block specific-js %}

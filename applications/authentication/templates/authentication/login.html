@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
+{% block navbar %}
+{% endblock %}
 {% block content %}
     <h1 align="center">
         {% trans 'Log in' %}
@@ -11,5 +12,9 @@
         <button type="submit" class="btn btn-primary btn-raised">
             {% trans 'Log in' %}
         </button>
+
+            {% trans "or" %}
+
+        <a href="{{ signup_url }}">{% trans "Sign up" %}</a>
     </form>
 {% endblock %}

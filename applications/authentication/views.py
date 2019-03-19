@@ -15,6 +15,7 @@ from applications.authentication import (
 class SignUp(generic.CreateView):
     form_class = authentication_forms.SignUp
     template_name = "authentication/signup.html"
+    success_url = reverse_lazy(authentication_conf.LOGIN_URL_NAME)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

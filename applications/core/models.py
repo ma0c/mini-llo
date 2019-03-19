@@ -23,7 +23,6 @@ class Idea(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     text = models.TextField()
     is_approved = models.BooleanField()
-    is_private = models.BooleanField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

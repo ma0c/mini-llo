@@ -25,7 +25,12 @@ SECRET_KEY = 'j0thidrdg=eff5p6xhb2j3nerf59*it=&=%m8cpnsdsuzj^0s0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "127.0.1.1",
+    "10.44.25.237",
+]
 
 
 # Application definition
@@ -38,7 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'applications.authentication',
-    'applications.core'
+    'applications.core',
+
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -66,6 +74,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'applications.authentication.context_processors.login_urls',
+                'applications.authentication.context_processors.authenticated_token',
+                'applications.core.context_processors.core_menu',
             ],
         },
     },
@@ -128,3 +139,12 @@ AUTH_USER_MODEL = 'authentication.User'
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/authentication/log-in"
 LOGOUT_REDIRECT_URL = "/"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated'
+    ),
+}

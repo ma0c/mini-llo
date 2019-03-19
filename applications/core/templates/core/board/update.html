@@ -1,19 +1,20 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block navbar %}
-{% endblock %}
-{% block content %}
+
+{%  block content %}
     <h1 align="center">
-        {% trans 'Sign Up' %}
+        {% trans 'Update board' %}
     </h1>
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary btn-raised">
-            {% trans 'Sign Up' %}
+            {% trans 'Create' %}
         </button>
-        {% trans "or" %}
-
-        <a href="{{ login_url }}">{% trans "Log in" %}</a>
     </form>
+    <a href="{{ delete_board_url }}" >
+        <button class="btn btn-danger">
+            {% trans "Delete board" %}
+        </button>
+    </a>
 {% endblock %}

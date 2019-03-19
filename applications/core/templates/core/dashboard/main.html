@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load staticfiles %}
 {% block specific-css %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
@@ -6,33 +7,184 @@
 {% block content %}
     <div class="container">
 
-    <h1 align="center">
-        Mini-llo
-    </h1>
-    <div>
+        <h1 align="center">
+            Mini-llo
+        </h1>
+        <div>
 
-        <div class="row">
-            {% for board in boards %}
-                <div class="col-lg-4 col-sm-6 col-xs-12">
-                    <div class="board">
-                        <div class="board-head justify-content-center">
-                            <h5 align="center">
+            <div class="row">
+                {% for board in boards %}
+                    <div class="col-lg-4 col-sm-6 col-xs-12">
+                        <div class="board">
+                            <div class="board-head justify-content-center">
+                                <h5 align="center">
+                                    {{ board.name }}
+                                    {% if board.owner == user %}
+                                        <a href="{% url update_board_url_name board.id%}">
+                                            <i class="small material-icons">edit</i>
+                                        </a>
+                                    {% endif %}
+                                </h5>
 
-                                {{ board.name }}
-                            </h5>
+                            </div>
+                            <ul id="board_idea_{{ board.id }}">
+                                    {% for idea in board.idea_set.all %}
+                                        {% if idea.is_approved %}
+                                            <li >
+                                                <span id="idea_{{ idea.id }}">{{ idea.text }}</span>
+                                                {% if board.owner == user %}
+                                                    <!--<i class="small material-icons edit_idea" style="cursor: pointer" data-idea-id="{{ idea.id }}">edit</i>
+                                                    <i class="small material-icons delete_idea" style="cursor: pointer" data-idea-id="{{ idea.id }}">delete</i>
+                                                    -->
+                                                {% endif %}
+                                            </li>
+                                        {% endif %}
+                                    {% empty %}
+                                        <li id="board_empty_{{ board.id }}">
+                                        {% trans 'No ideas yet on this board' %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            <a class="add-idea" data-board-id="{{ board.id }}">
+                                <button type="button" class="btn btn-info bmd-btn-fab bmd-btn-fab-sm float-right align-bottom">
+                                      <i class="material-icons">add</i>
+                                </button>
+                            </a>
                         </div>
-                        <button type="button" class="btn btn-info bmd-btn-fab bmd-btn-fab-sm float-right">
-                              <i class="material-icons">add</i>
-                        </button>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
+            <a href="{{ create_board_url }}">
+                <button type="button" class="btn btn-secondary bmd-btn-fab float-right">
+                      <i class="material-icons">add</i>
+                </button>
+            </a>
         </div>
-        <a href="{{ create_board_url }}">
-            <button type="button" class="btn btn-secondary bmd-btn-fab float-right">
-                  <i class="material-icons">add</i>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="idea">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal_title"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="button_close_top_modal">
+              <span aria-hidden="true">&times;</span>
             </button>
-        </a>
+          </div>
+          <div class="modal-body">
+              <form>
+                  <div class="form-group">
+                      <input id="idea_board" hidden>
+                      <input id="idea_id" hidden>
+                      <label for="idea_idea">{% trans 'Idea' %}</label>
+                        <textarea id="idea_idea" class="form-control" cols="30" rows="3"></textarea>
+                  </div>
+                  <button class="btn btn-primary"></button>
+              </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="send_idea">{% trans 'Add Idea' %}</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="button_modal_close">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
-    </div>
+{% endblock %}
+{% block specific-js %}
+    <script type="application/javascript">
+        $(document).ready(function()
+        {
+           $(".add-idea").click(function(event)
+           {
+               $("#idea_board").val($(this).data("boardId"));
+               $("#modal_title").html('{% trans 'Add an idea' %}');
+               {% if user.is_authenticated %}
+                   $("#idea").modal("show");
+               {% else %}
+                   $.snackbar(
+                       {
+                           content: "{% trans "To add ideas, you need to log in" %} <a href='{{ login_url }}' class='btn btn-info'> {% trans "Log in" %} </a>",
+                           htmlAllowed: true
+                       });
+
+               {% endif %}
+           });
+            var clear_and_hide_modal = function()
+            {
+                $("#idea").modal("hide");
+                $("#idea_idea").val("");
+            };
+            $("#button_modal_close").click(clear_and_hide_modal);
+            $("#button_close_top_modal").click(clear_and_hide_modal);
+            {% if user.is_authenticated %}
+               $("#send_idea").click(function (event)
+               {
+                   var board_id = $("#idea_board").val();
+                   var idea_text = $("#idea_idea").val();
+                   var request = new Request(
+                       '{{ create_idea_api_url }}',
+                       {
+                           method: "POST",
+                           body: JSON.stringify({
+                               "board": board_id,
+                               "text": idea_text
+                           }),
+                           headers: {
+                               "Authorization": "Token {{ user.auth_token }}",
+                               "Content-Type": "application/json"
+                           }
+                       }
+                   );
+                   fetch(request)
+                       .then(response => {
+                           console.log(response);
+                           if (response.status === 201)
+                           {
+                               return response.json();
+                           }
+                           else
+                           {
+                               throw new Error("Bad response from server")
+                           }
+                       })
+                       .then(
+                           json_response => {
+                               if (json_response["is_approved"])
+                               {
+                                   $(`#board_empty_${json_response["board_id"]}`).remove();
+                                   $(`#board_idea_${json_response["board_id"]}`).append(`
+<li >
+    <span id="idea_${json_response["id"]}">${json_response["text"]}</span>
+    <!--<i class="small material-icons edit_idea" style="cursor: pointer" data-idea-id='${json_response["id"]}'>edit</i>
+    <i class="small material-icons delete_idea" style="cursor: pointer" data-idea-id='${json_response["id"]}'>delete</i>-->
+</li>
+`);
+                               }
+                               else
+                               {
+                                   $.snackbar({content: "{% trans 'Idea submitted and needs to be approved by board owner' %}"});
+                               }
+                               clear_and_hide_modal();
+                           }
+                       ).catch(
+                           error => {
+                               $.snackbar({content: error});
+                               clear_and_hide_modal();
+                           }
+                       );
+               });
+               $(".edit_idea").click(function (event)
+               {
+                    $("#modal_title").html('{% trans 'Edit an idea' %}');
+                    var idea_id = $(this).data("ideaId");
+                    console.log(idea_id);
+                    $("#idea_id").val(idea_id);
+                    $("#idea_idea").val($(`#idea_${idea_id}`).text());
+                    $("#idea").modal("show");
+               });
+
+
+            {% endif %}
+        });
+    </script>
+
 {% endblock %}
