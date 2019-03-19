@@ -1,0 +1,20 @@
+.board {
+    min-height: 260px;
+    border: solid #006AB3;
+    margin: 15px;
+}
+
+.board-head{
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
+    background: #006AB3;
+}
+
+.board-body{
+    padding: 10px;
+}
+
+.dashboard-table{
+    display: table;
+}
